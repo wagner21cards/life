@@ -76,6 +76,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<TabType>("together");
   const [isSyncing, setIsSyncing] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [showIntegrations, setShowIntegrations] = useState(false);
 
   const [brynnaData, setBrynnaData] = useState<PersonData>(INITIAL_BRYNNA);
   const [lukeData, setLukeData] = useState<PersonData>(INITIAL_LUKE);
@@ -83,6 +84,7 @@ export default function Home() {
 
   const [showAddDrawer, setShowAddDrawer] = useState(false);
   const [lastSync, setLastSync] = useState("");
+  const [newTaskText, setNewTaskText] = useState("");
 
   // --- Persistence ---
   useEffect(() => {
@@ -155,7 +157,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans flex flex-col max-w-md mx-auto shadow-2xl relative overflow-hidden pb-20">
       {/* iOS Status Bar Mock */}
-      <div className="h-12 flex items-center justify-between px-8 z-30 w-full shrink-0">
+      <div className="h-12 flex items-center justify-between px-8 z-30 w-full shrink-0 pointer-events-none">
         <span className="text-sm font-bold">9:41</span>
         <div className="flex gap-1.5 items-center">
           <svg width="17" height="11" viewBox="0 0 17 11" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -167,11 +169,14 @@ export default function Home() {
 
       <header className="px-6 pt-4 pb-6 bg-white sticky top-0 z-20">
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <div className="bg-rose-500 p-1.5 rounded-lg shadow-lg shadow-rose-100">
-              <Heart className="text-white w-5 h-5 fill-white" />
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="bg-rose-500 p-1 rounded-lg shadow-lg shadow-rose-100">
+                <Heart className="text-white w-3 h-3 fill-white" />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-rose-500">Our Life</span>
             </div>
-            <h1 className="text-xl font-black tracking-tight uppercase italic">Us</h1>
+            <h1 className="text-2xl font-black italic tracking-tight text-slate-900">Hi Brynna & Luke!</h1>
           </div>
           <button
             onClick={syncOutlook}
@@ -231,12 +236,12 @@ export default function Home() {
               </div>
             )}
 
-            <section>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-sm font-black uppercase tracking-[0.2em] text-slate-400">Schedule</h2>
-                <div className="h-[1px] flex-1 mx-4 bg-slate-100" />
+            <section className="bg-white rounded-[2.5rem] p-6 border border-slate-100 shadow-sm">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Schedule</h2>
+                <div className="h-[1px] flex-1 mx-4 bg-slate-50" />
               </div>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {getActiveData().events.length > 0 ? getActiveData().events.map(event => (
                   <div key={event.id} className="group relative flex items-center gap-4 bg-white p-4 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
                     <div className={cn(
@@ -260,11 +265,31 @@ export default function Home() {
               </div>
             </section>
 
-            <section>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-sm font-black uppercase tracking-[0.2em] text-slate-400">To-Do</h2>
-                <div className="h-[1px] flex-1 mx-4 bg-slate-100" />
+            <section className="bg-white rounded-[2.5rem] p-6 border border-slate-100 shadow-sm">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">To-Do</h2>
+                <div className="h-[1px] flex-1 mx-4 bg-slate-50" />
               </div>
+
+              <div className="mb-4 flex items-center gap-3 bg-slate-50 p-2 rounded-2xl border border-slate-100 focus-within:border-rose-200 transition-colors">
+                <div className="w-6 h-6 rounded-lg border-2 border-slate-200 flex items-center justify-center">
+                  <Plus className="w-4 h-4 text-slate-300" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Add a task..."
+                  value={newTaskText}
+                  onChange={(e) => setNewTaskText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && newTaskText.trim()) {
+                      addTask(newTaskText, activeTab);
+                      setNewTaskText("");
+                    }
+                  }}
+                  className="bg-transparent border-none focus:outline-none text-sm font-bold w-full placeholder:text-slate-300"
+                />
+              </div>
+
               <div className="space-y-2">
                 {getActiveData().tasks.length > 0 ? getActiveData().tasks.map(task => (
                   <div key={task.id} className="flex items-center gap-3 group">
@@ -322,6 +347,79 @@ export default function Home() {
         <Plus className="w-6 h-6 stroke-[3px]" />
       </button>
 
+      <AnimatePresence>
+        {showIntegrations && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed inset-0 bg-white z-[45] flex flex-col p-8 max-w-md mx-auto"
+          >
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-3xl font-black italic">Settings</h2>
+              <button
+                onClick={() => setShowIntegrations(false)}
+                className="bg-slate-100 p-2 rounded-full"
+              >
+                <Plus className="w-6 h-6 rotate-45" />
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              <section>
+                <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-4">Integrations</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between bg-slate-50 p-4 rounded-[2rem] border border-slate-100">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-blue-600 p-2 rounded-xl">
+                        <Calendar className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm">Outlook Calendar</p>
+                        <p className="text-[10px] text-slate-400 uppercase font-black">Not Connected</p>
+                      </div>
+                    </div>
+                    <button className="bg-blue-600 text-white text-xs font-black px-4 py-2 rounded-full uppercase tracking-wider">
+                      Connect
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between bg-slate-50 p-4 rounded-[2rem] border border-slate-100 opacity-60">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-emerald-500 p-2 rounded-xl">
+                        <Calendar className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm">Google Calendar</p>
+                        <p className="text-[10px] text-slate-400 uppercase font-black">Coming Soon</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section>
+                <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-4">Account</h3>
+                <div className="bg-slate-50 p-6 rounded-[2.5rem] border border-slate-100 text-center">
+                  <div className="w-20 h-20 bg-rose-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <Heart className="w-10 h-10 text-rose-500 fill-rose-500" />
+                  </div>
+                  <p className="text-xl font-black italic">Brynna & Luke</p>
+                  <p className="text-xs text-slate-400 font-bold">Together since 2021</p>
+                </div>
+              </section>
+            </div>
+
+            <button
+              onClick={() => setShowIntegrations(false)}
+              className="mt-auto w-full py-4 bg-slate-900 text-white rounded-3xl font-black uppercase tracking-widest text-sm"
+            >
+              Done
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-slate-100 h-20 px-8 flex items-center justify-between z-20 max-w-md mx-auto">
         <button className="flex flex-col items-center gap-1 text-rose-500">
           <Heart className="w-6 h-6 fill-rose-500" />
@@ -336,8 +434,14 @@ export default function Home() {
           <ShoppingBag className="w-6 h-6" />
           <span className="text-[10px] font-black uppercase">Shop</span>
         </button>
-        <button className="flex flex-col items-center gap-1 text-slate-300 hover:text-slate-600 transition-colors">
-          <User className="w-6 h-6" />
+        <button
+          onClick={() => setShowIntegrations(!showIntegrations)}
+          className={cn(
+            "flex flex-col items-center gap-1 transition-colors",
+            showIntegrations ? "text-rose-500" : "text-slate-300 hover:text-slate-600"
+          )}
+        >
+          <User className={cn("w-6 h-6", showIntegrations && "fill-rose-500")} />
           <span className="text-[10px] font-black uppercase">Me</span>
         </button>
       </nav>
